@@ -14,8 +14,11 @@ import {
 
 import { Response } from 'express';
 
+import { ProductsService } from './../services/products.service';
+
 @Controller('products')
 export class ProductsController {
+  constructor(private productsService: ProductsService) {}
   @Get('filter')
   getProductFilter() {
     return { message: 'Yo soy un filtro' };
@@ -23,47 +26,29 @@ export class ProductsController {
 
   @Get(':productId')
   @HttpCode(HttpStatus.OK)
-  getOne(@Res() response: Response, @Param('productId') params: string) {
-    response.status(200).send({
-      message: 'El producto',
-      data: params,
-    });
+  getOne(@Param('productId') productId: number) {
+    return this.productsService.findOne(+productId);
   }
 
   @Get()
   get(@Query('limit') limit = 100, @Query('offset') offset = 'No data') {
-    return {
-      message: 'Esto son los productos',
-      data: {
-        limit,
-        offset,
-      },
-    };
+    return this.productsService.findAll();
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() payload: { title: string }) {
-    return {
-      message: 'Accion para crear',
-      title: payload.title,
-    };
+    return this.productsService.create(payload);
   }
 
-  @Put(':id')
+  @Put()
   @HttpCode(HttpStatus.OK)
-  update(@Param('id') id: number) {
-    return {
-      message: 'Producto Actualizado',
-      id: id,
-    };
+  update(@Body() payload: any) {
+    return this.productsService.update(payload);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   delete(@Param('id') id: number) {
-    return {
-      message: 'Producto Eliminado',
-      id: id,
-    };
+    return this.productsService.delete(id);
   }
 }

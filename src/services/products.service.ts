@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { type } from 'os';
 import { Product } from './../entities/product.entity';
 
 @Injectable()
 export class ProductsService {
-  private counterId = 1;
   private products: Product[] = [
     {
       id: 1,
@@ -11,7 +11,14 @@ export class ProductsService {
       description: 'Console portatil',
       price: 100,
     },
+    {
+      id: 2,
+      name: 'wii',
+      description: 'Consola de sobremesa',
+      price: 150,
+    },
   ];
+  private counterId = this.products.length;
   findAll() {
     return this.products;
   }
@@ -19,7 +26,7 @@ export class ProductsService {
     return this.products.find((item) => item.id === id);
   }
   create(payload: any) {
-    this.counterId += 1;
+    this.counterId = this.counterId + 1;
     const newProduct = {
       id: this.counterId,
       ...payload,
@@ -27,15 +34,28 @@ export class ProductsService {
     this.products.push(newProduct);
     return newProduct;
   }
-  update(payload: Product){
-    this.products.map(element => {
-      if(element.id === payload.id){
-        return payload;
-      }
-      return element;
-    })
+  update(payload: Product) {
+    if(!payload.id){
+      return {message: "Not id"};
+    }
+    const product = this.findOne(payload.id);
+    if (product) {
+      this.products = this.products.map((element) => {
+        if (element.id === payload.id) {
+          return {...element, ...payload};
+        }
+        return element;
+      });
+      return this.products.filter(product => product.id == payload.id)[0];
+    }
+    return {message: "Not product"};
   }
-  delete(id: number){
-    this.products = this.products.filter(item => item.id !== id);
+  delete(id: number) {
+    const product = this.findOne(id);
+    if (product) {
+      this.products = this.products.filter((item) => item.id !== id);
+      return true;
+    }
+    return null;
   }
 }
